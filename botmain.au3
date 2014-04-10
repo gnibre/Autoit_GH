@@ -37,6 +37,7 @@
 #include<A1Q1.au3>
 #include<A1Q6.au3>
 #include<A1Q32.au3>
+#include<A2Q72.au3>
 #include<common.au3>
 
 Opt('MouseCoordMode', 0) ; 0 : relative relative coords to the active window
@@ -85,8 +86,11 @@ $class = 3;  1 for wizard. 3=wd
 
 
 Pause()  ;
+$act=2; // related to gear repair,  teleport entrance;
+;ManglemawStay();
+A2Q72SSXXGO()
 
-ManglemawStay();
+
 
 
 ;finditem(115,2);
@@ -104,6 +108,35 @@ ManglemawStay();
  ;moveToQuest()
  
 ;WDUpGradeA1Q1()
+
+
+Func A2Q72SSXXGO()
+
+
+   ; make sure act 
+   $act=2
+   
+While 1
+   
+   makeSureWeAreInGame(1)
+
+   If(tryCheckFixGearFromBornPlace())Then
+	  ; we shall got repair done here.
+	  tryQuitGameToMenuFromInGame()
+	  ContinueLoop
+   EndIf 
+   
+      ; to the portal
+   MoveToCellar()   
+   Sleep(200) ; wait  for slow tp
+   fightSSXXWZ(); // in a2q72 file;
+   
+   ;106 for all, 105 for legonly;
+   MoveFast(506,376);
+   pickupNoMove(106);
+   tryQuitGameToMenuFromInGame()   
+WEnd
+EndFunc
 
 
 
@@ -137,13 +170,6 @@ While 1
    tryQuitGameToMenuFromInGame()   
 WEnd
 EndFunc
-
-
-
-
-
-
-
 
 
 Func BBShuaA1Q6()
@@ -604,6 +630,8 @@ WEnd
 EndFunc   ; =>makeSureWeAreInMainMenu()
 
 
+
+
 Func tryCheckFixGearFromBornPlace()
    ;$repair2 = PixelSearch(569, 39, 597, 84, 0xFFEF00)
    
@@ -636,7 +664,40 @@ Func tryCheckFixGearFromBornPlace()
 			return 0
 EndFunc
 
+
 Func InvRepairFromBorn()
+   
+   If($act==1) Then
+	  InvRepairFromBornACT1()
+   ElseIf($act==2) Then
+	  InvRepairFromBornACT2();
+   EndIf
+   
+EndFunc
+
+
+Func InvRepairFromBornACT2()
+   
+MouseMove(358,98,3)
+Sleep(1000)
+   
+   MouseClick("left")
+   Sleep(4500)
+
+Click(295, 365)  ; click repair button.
+   Sleep(Random(800, 1600))
+   
+      Click(186, 326) ;button to pay for repairs
+   Sleep(Random(100, 600))
+   
+   Send("{ESCAPE}")
+   Sleep(Random(100, 200))
+   
+EndFunc
+
+
+
+Func InvRepairFromBornACT1()
    
    ;move to deeler.
    
@@ -653,6 +714,8 @@ Func InvRepairFromBorn()
 	  MouseMove(387,199,3)
 	  Sleep(500)
    EndIf
+   
+   
    
    MouseClick("left")
    Sleep(2500)
@@ -773,8 +836,17 @@ EndFunc   ;==>DEBUG
 	  
    EndFunc ;=>Tests, F8  
    
-   
 Func MoveToCellar()
+If($act==1) Then
+	  MoveToCellarACT1()
+   ElseIf($act==2) Then
+	  MoveToCellarACT2();
+   EndIf
+
+EndFunc
+
+   
+Func MoveToCellarACT1()
 	       ;4,176 5,268 5,271 84,159
        Sleep(Random(100, 200))
 	   
@@ -789,6 +861,20 @@ Func MoveToCellar()
 	   Sleep(4100)   
 
 EndFunc   ;==>MoveToCellar
+
+
+Func MoveToCellarACT2()
+   Sleep(Random(100, 200))
+	   
+	   ; click to use purtal
+	   MouseMove(202,103,4)
+	   sleep(820)
+	   MouseClick("left") ;  speed = 1 to give system time to change mouse to hand for tp
+	   ToolTip(" move to cellar clicked",0,0)
+	   Sleep(4100)   
+EndFunc
+
+;202,103 for tp;
 
 
 

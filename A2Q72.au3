@@ -1,16 +1,38 @@
-Func moveToPositionDoorLevel2()
-   
-   ;729,247
-    MouseMove(271,139)      ;; opsite to back.  60,350
-	Sleep(500);	
-	MouseClick("left")
-	Sleep(2000);
+Func bufWZ()
+Send("{1}")	
+Sleep(100)
+Send("{2}")	
+Sleep(100)
+Send("{3}")	
+Sleep(300)
+EndFunc
+
+
+func moveToFightSSXXPosition()
+   MouseMove(754,538,3)
+   Sleep(1000)
+   MouseClick("left")
+	Sleep(4000);
+	
+	;now we are at dahlgur oasis
+	
+	
+	MouseMove(741,537,2)
+   Sleep(30)
+   send("{space}")	;	 maybe config this move hotkey?
+   Sleep(1630)
+   ;fight about to begin.
+   send("{space}")	;	 maybe config this move hotkey?
+   Sleep(830)
+   ; go further, so hope that inv minion will come earlier
 EndFunc
 
 
 
-Func fightManglemawWD()
-   fightWD()
+Func fightSSXXWD()
+   
+   moveToFightSSXXPosition()
+   fightWD272()
    
 EndFunc
 
@@ -18,12 +40,12 @@ EndFunc
 
 
 
-Func fightManglemawWZ()
-   
-moveToFightMaglemawPosition()
+Func fightSSXXWZ()
+   bufWZ()
+moveToFightSSXXPosition()
 
 
-fightMAGA()
+fightMAGA272()
    
 EndFunc
 
@@ -34,7 +56,7 @@ EndFunc
 ;4 army; dps
 ;5 aoe, spirit barrage
 ;6aoe, bat;
-Func fightWD()
+Func fightWD272()
 
    MouseMove(172,450,2)
    Sleep(30)
@@ -101,19 +123,10 @@ EndFunc
 ;right, hydra
 ;4: archon ; last 20s
 
-Func fightMAGA()
+Func fightMAGA272()
 
-MouseMove(667,88)
-Send("{1}")	
-Sleep(100)
-Send("{2}")	
-Sleep(100)
-Send("{3}")	
-Sleep(100)
-MouseClick("right")
-Sleep(100)
-MouseClick("right")
-Sleep(100)
+MouseMove(686,492)
+
 MouseClick("right")
 Sleep(100)
 MouseClick("right")
@@ -134,17 +147,6 @@ MouseUp("right")
 
 MouseClick("right")
 Sleep(100)
-   
 
 EndFunc
 
-
-
-
-
-Func moveToFightMaglemawPosition()
-   MouseMove(122,500,2)
-   Sleep(30)
-   send("{space}")	;	 maybe config this move hotkey?
-   Sleep(1000)
-EndFunc

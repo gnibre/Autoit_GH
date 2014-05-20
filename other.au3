@@ -9,6 +9,9 @@
 #ce ----------------------------------------------------------------------------
 
 ; Script Start - Add your code below here
+pressAAAAAAAAA()
+
+
 
 Func WriteFileAppend()
 	
@@ -36,5 +39,43 @@ func writeToNamedFileAppend($name,$msg)
 	FileWriteLine($file,$msg)
 	FileClose($file)
  EndFunc
+ 
+ 
+ 
+ func pressAAAAAAAAA()
+while 1
+$active = WinActive('Diablo III')   
+   If Not $active Then	  
+   ToolTip(" diablo not active!!!!!!!!!!!!!!!!!!!",0,0)
+   WinActivate('Diablo III')
+   EndIf
+	  
+   
+   MouseMove(467,248)
+send("{SHIFTDOWN}")
+	   sleep(50);
+	   MouseClick("left")
+	   sleep(50);
+send("{SHIFTUP}")
+Sleep(100)
+Send("{1}")	
+Sleep(300)
+Send("{2}")	
+Sleep(200)
+Send("{3}")
+Sleep(200)
+Send("{4}")	
+Sleep(200)
+
+   For $l=1 to 100
+	  Send("{4}")	
+   Sleep(200)
+   Next
+	
+Sleep(200)	
+	  
+WEnd
+	
+EndFunc
  
  

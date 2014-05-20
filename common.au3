@@ -3,11 +3,9 @@
 Func getLocationAndColor()
 ; for esc:   577,613 , 985d13
 Local $pos = MouseGetPos()
-
 Local $colorxy = Hex(PixelGetColor($pos[0],$pos[1]),6)
-
 DEBUG("Mouse x,y: "&$pos[0] & "," & $pos[1] &"   color  "&$colorxy)
-sleep(3999)
+sleep(299)
 EndFunc
 
 

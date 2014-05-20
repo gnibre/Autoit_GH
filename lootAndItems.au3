@@ -23,6 +23,7 @@ $Right = 600
 $Bottom = 530
 
 
+$ColorRare2 = 0xE6E503;      ; rare when on ghom, like shit.
 $ColorRare = 0xFFFF00 ;rare color code ; 0xbbbb00may also work.
 $ColorBlue = 0x6969FF ;blue color code    ; my blue like 99,99,239
 $ColorLeg = 0xBF642F ;legendary color code; 191-100-47
@@ -48,6 +49,7 @@ $ColorSet2 = 0x02E002
 ; set color;    8,227,3
 ; 6,214,2
 
+; check findLegendary function for leg color and set color,
 $ColorLight = 0xFAFAB2    ; 255-249-176 ;  255-230-162; 255-252-205
 
 $ColorTome = 0x09B0EF; 144 176 239        
@@ -117,7 +119,18 @@ func goHomeAndPutToStash()
 		Next
 		
     Send("{ESCAPE}")
-   EndFunc
+ EndFunc
+ 
+ 
+ Func rightClickEverySlotToSellOrToStash($skipColumnCount)
+	For $i = $skipColumnCount To 9
+		   For $j = 0 To 5
+				   MouseClick("right", $slot1x + ($i *$offset), $slot1y + ($j *$offset), 1, 3)
+				   Sleep(40)
+		   Next
+   Next
+ EndFunc
+ 
 			   
 
 
@@ -185,7 +198,7 @@ Func findAndTryPickupItemByColor($forColor,$checkLimit)
    EndFunc
    
 
-Func findLegendary($forColor,$checkLimit)
+Func findLegendary($forColor,$isSet,$checkLimit)
 	  $work = 1
    $checkCount = 0
 	  While $work == 1 And $checkCount < $checkLimit
@@ -197,25 +210,40 @@ Func findLegendary($forColor,$checkLimit)
 				  
 				  ; so check before we click 
 				  
-					 $res2 = PixelSearch($SearchResult[0]-15, $SearchResult[1]+30, $SearchResult[0]+15, $SearchResult[1]+10, $ColorLight,20)
-					 
-					 
-					 MouseMove($SearchResult[0],$SearchResult[1],3)
-						Sleep(100)
-                       MouseClick("left", $SearchResult[0],$SearchResult[1], 1, 10) ;IF
-					 
+				  ; brown;
+				  ;0xFAFAB2    ; 255-249-176 ;  255-230-162; 255-252-205
+				  
+				  ;set   60,255,61    3CFF3D				  
+				  If($isSet==True) Then
+					 $beamColor = 0x3CFF3D
+				  Else
+					$beamColor =  0xFAFAB2
+				  EndIf
+				  
+				  For $waitbeam = 1 to 4
+					 $res2 = PixelSearch($SearchResult[0]-35, $SearchResult[1]-30, $SearchResult[0]+55, $SearchResult[1]+10, $beamColor,40)
 					 ; color for light on it is : 255-249-176 
-					 ;If Not @error Then 
-						;MouseMove($SearchResult[0],$SearchResult[1],3)
-						;Sleep(100)
-                       ;MouseClick("left", $SearchResult[0],$SearchResult[1], 1, 10) ;IF					   
-                       ;$work = 1
-					;Else
-					 ;  MouseMove($SearchResult[0],$SearchResult[1],3)
-					  ; Sleep(3500);
-					  ; DEBUG("  we find  legend color but we give up up there's no light on it.  ,   ");
+					 If Not @error Then 
+						DEBUG("  FIND ONE >>   ");
+						MouseMove($SearchResult[0],$SearchResult[1],3)
+						Sleep(200)
+                       MouseClick("left", $SearchResult[0],$SearchResult[1], 1, 10) ;IF			
+						Sleep(3900)
+                       $work = 1
+					 Else
+					   MouseMove($SearchResult[0],$SearchResult[1],3)
+					   Sleep(900);
+					   DEBUG("  we find  legend color but we give up up there's no light on it.  ,   ");
+					   ; move a bit in case stand on;
+					   
 					  ; color set changed;
-					;EndIf
+				   EndIf
+				   Sleep(50)
+				  Next
+					  MouseMove(Random(390,410), Random(295,315),3)
+					  Sleep(100)
+					  send("{space}")
+					  Sleep(200)
 			   Else
 					   $work = 0
 			   EndIf
@@ -232,40 +260,50 @@ EndFunc
 
 Func FindItem($type,$checkLimit)
    
-   
+   $beamsOnly = False;
 	  If($checkLimit<2)Then
 		 $checkLimit= 2;
 	  EndIf
 	  
-	  
+	  $beamsOnly = False
 	  If($type>100)Then
-		 ;  for tome and gem.
-		 
 		 $type = $type-100;
 	  Else		 
+		 ; for these 05,06, we need beem to prvent pick others than leg......   for botting choice; ? all choice is for botting...
+		 $beamsOnly = True
 	  EndIf
 	  
 	  
 	  If($type<5)Then
 		 $type = 6
 	  EndIf
-	  ; always set and leg
-	  findAndTryPickupItemByColor($ColorSet,2)
-	  findAndTryPickupItemByColor($ColorSet2,2)
 	  
-	  findAndTryPickupItemByColor($ColorLeg,1)
-	  findAndTryPickupItemByColor($ColorLeg2,1)
-	  findAndTryPickupItemByColor($ColorLeg3,1)
-		  ; always want legendary  
-	  findLegendary($ColorLeg,3)	  
-	  findLegendary($ColorLeg2,3)
-	  findLegendary($ColorLeg3,3)
+	  ; always set and leg
+	  
+	  if($beamsOnly) Then
+	  findLegendary($ColorLeg,False,5)	  
+	  findLegendary($ColorLeg2,False,5)
+	  findLegendary($ColorLeg3,False, 5) 
+	  
+	  findLegendary($ColorSet,True, 5) 
+	  findLegendary($ColorSet2,True, 5) 
+	  
+	  Else
+		findAndTryPickupItemByColor($ColorSet,2)
+	  findAndTryPickupItemByColor($ColorSet2,2)
+		
+		findAndTryPickupItemByColor($ColorLeg,2)
+	  findAndTryPickupItemByColor($ColorLeg2,2)
+	  findAndTryPickupItemByColor($ColorLeg3,2)
+	  EndIf
+	  
 
 	  If($type>5)Then
 		 findAndTryPickupItemByColor($ColorRare,2)
+		 findAndTryPickupItemByColor($ColorRare2,2)
 	  EndIf
 	  
-	  	  ;findAndTryPickupItemByColor($ColorTome,2)
+	  ;findAndTryPickupItemByColor($ColorTome,2)
 	  findAndTryPickupItemByColor($ColorGem,2)	  
 
 EndFunc   ;==>FindItem

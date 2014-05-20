@@ -209,10 +209,10 @@ $res = _ImageSearch(".\img\st-mm-resume.png",1,$x,$y,30);default search whole sc
 
 If($res)Then
    ; new resume at 225,374
-   ;ToolTip(" got target x, y is : "&$x&" - "&$y,0,0)
+   ToolTip(" got target x, y is : "&$x&" - "&$y,0,0)
    ;MouseMove($x,$y,3)
    ; if we want to move from a result of imgsearch, we shall change it from global to relative.
-   ;sleep(5000)
+   ;sleep(15000)
    
    return 11
 EndIf
@@ -265,10 +265,6 @@ EndIf
 return 29;  for other case, return , like we dont' really know where we are....
 
 EndFunc
-
-
-
-
 
 
 ;sleep(3000);

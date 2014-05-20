@@ -38,6 +38,7 @@
 #include<A1Q6.au3>
 #include<A1Q32.au3>
 #include<A2Q72.au3>
+#include<A3Q33Ghom.au3>
 #include<common.au3>
 
 Opt('MouseCoordMode', 0) ; 0 : relative relative coords to the active window
@@ -78,29 +79,12 @@ $class = 3;  1 for wizard. 3=wd
   
 ;   fightBridgeAndLoot()
  
- 
- 
-;Pause()       
-;moveToQuestA1Q1()
-
-
 
 Pause()  ;
-$act=2; // related to gear repair,  teleport entrance;
+
+
 ;ManglemawStay();
-A2Q72SSXXGO()
-
-
-
-
-;finditem(115,2);
-;Pause()  ;
-
-
-;Sleep(5000);
-
-;moveToPositionA1Q6Fast();
-;fightBrokenBladeCS60()
+;A2Q72SSXXGO()
 
 ;BBShuaA1Q6()
 ;WDUPA1Q6ZL()
@@ -108,6 +92,231 @@ A2Q72SSXXGO()
  ;moveToQuest()
  
 ;WDUpGradeA1Q1()
+
+;3330, ghom, champaign mode, start from last time killed ghom better, all need picture recg
+Global $selectedContentType =3330;  say: 3330 means act 3, chapter3, quest 3, code 0;
+Global $act=2; // related to gear repair,  teleport entrance;
+Global $needselectQuest=False;
+Global $startGameResumeOnly = 0; 0 for anything, 1 for yes,resume only;
+Global $needWayPoint=False;
+$needStash = 5;
+$runBeforeNextStash=24;
+
+
+
+
+;================================================================================run selected contnet;
+mainEntryForAllLoop();
+
+
+; common loop for most target, use selected content;
+Func mainEntryForAllLoop()
+   initWithSelectedContent()
+While 1
+   ; sometimes we need to select some task, so we have to select certain quest like Ghom.
+   makeSureWeAreInMainMenu()
+
+   If($needselectQuest) Then
+	  selectRightQuest()
+   EndIf
+
+   makeSureWeAreInGame($startGameResumeOnly)
+	  
+   If($needStash<1) Then
+	  
+	SellAndIDAndStash()
+	tryQuitGameToMenuFromInGame()
+	$needStash =$runBeforeNextStash
+	ContinueLoop
+   EndIf
+ 
+ ; most of time, cause we do stash and repair, we don't need this.
+   ;If(tryCheckFixGearFromBornPlace())Then
+	  ; we shall got repair done here.
+	;  tryQuitGameToMenuFromInGame()
+	;  ContinueLoop
+   ;EndIf 
+   
+   
+   
+   $needStash = $needStash -1;
+   
+   If($needWayPoint)Then
+	  goWayPoint()
+   Else
+      ; to the portal; this name is saved .. move to cellar => use checked point tp;
+	  MoveToCellar()
+   EndIf
+
+   
+   Sleep(200) ; wait  for slow tp
+   
+   DEBUG("begin fight---------")
+   Sleep(3000)
+   
+   ; use select content fight, check function content to see what do we fight;
+   fightCommon()
+   ;106 for all, 105 for legonly;
+   pickupCommon(106)
+   
+   tryQuitGameToMenuFromInGame()   
+WEnd
+
+   
+EndFunc
+
+
+Func fightCommon()
+   If($selectedContentType==3330) Then
+	  fightGhomCrusader();
+   EndIf
+EndFunc
+
+;530,425
+
+
+;3330 for ghom.
+Func initWithSelectedContent()
+   
+   If($selectedContentType==3330) Then
+	  $needselectQuest = True;
+	  $startGameResumeOnly = 0;
+	  $needWayPoint = True
+	  $runBeforeNextStash = 9;
+	  DEBUG(" ghom quest found; ")
+	  Sleep(100)
+   EndIf
+   
+   $act = Int($selectedContentType/1000)
+   ;Mod($selectedContentType,1000);
+   DEBUG(" act to go is "&$act&" rest is :"&$selectedContentType)
+   Sleep(100)   
+EndFunc
+
+
+Func selectRightQuest()
+   ;common one, hit game setting first;
+   MouseMove(168,350,3)
+   MouseClick("left")
+   Sleep(200)
+   ; common #2, hit act Select
+   MouseMove(424,213,3)
+   MouseClick("left")
+   Sleep(200)
+   
+   If($selectedContentType==3330) Then
+	  DEBUG(" ghom quest found;; let's do it; ")
+	  mainMenuSelectGhomQuestUniversal()
+   EndIf
+   
+   Sleep(200)
+   ; for all quest select,  we click ok and save here;
+   MouseMove(346,460,3); ok button
+   Sleep(200)
+   MouseClick("left")
+   Sleep(200)
+   Send("{Enter}")
+   Sleep(200)
+   
+   MouseMove(322,510,3); save&close button
+   Sleep(200)
+   MouseClick("left")
+   Sleep(200)
+   
+EndFunc
+
+Func goWayPoint()
+   
+   DEBUG(" ghom wya point")
+   Sleep(1000)
+   
+   Send("{M}")
+   
+   If($selectedContentType==3330) Then
+	  DEBUG(" ghom quest         way piont;")
+	  Sleep(200)
+	  
+	  ;keep of depth: 
+	  MouseMove(256,462,300)
+	  Sleep(1500)
+	  MouseClick("left")
+	  Sleep(5000)
+   EndIf
+   
+EndFunc
+
+
+
+; try use pic found so even when we can't use hard code, we still find the quest;
+Func mainMenuSelectGhomQuestUniversal()
+   $qx=-1
+   $qy=-1
+   
+   ; when using picture search, we have "shift" for these position in this package;
+   ; cause pick search use global position for x,y;
+   $res = _ImageSearch(".\img\quest33n-ghom1.png",1,$qx,$qy,30);default search whole screen. ; set option, not clicked.
+   If($res)Then
+	  ToolTip(" got target x, y is (GLOBAL/absolute): "&$qx&" - "&$qy,0,0)
+	  Opt("MouseCoordMode", 1) ;1=absolute, 0=relative, 2=client
+	  MouseMove($qx,$qy,3)
+	  ;switch back, for latter develop;
+	  Opt("MouseCoordMode", 0) ;1=absolute, 0=relative, 2=client
+	  Local $pos = MouseGetPos()
+	  $qx=$pos[0]
+	  $qy=$pos[1]
+	  DEBUG("back to main Mouse x,y: "&$qx & "," & $qx)	  
+	  sleep(1000)
+	  
+	  ; click q3,
+	  MouseClick("left")
+	  Sleep(400)
+   Else
+		 MouseMove(530,425,3)
+		 Sleep(200)
+		 MouseClick("left")
+		 Sleep(200)
+		 MouseClick("left")
+		 Sleep(200)
+		 MouseClick("left")
+		 Sleep(200)
+		 
+		 ; we search q32, cause if q33 finished, q34 will be highlight, if not finished, q33 is highlighted
+		 ; only q32 is always stable, 		 
+		 $res = _ImageSearch(".\img\quest33a-ghom1.png",1,$qx,$qy,30);default search whole screen. ; set option, not clicked.
+		 If($res)Then
+			ToolTip(" got target x, y is (GLOBAL/absolute): "&$qx&" - "&$qy,0,0)
+			Opt("MouseCoordMode", 1) ;1=absolute, 0=relative, 2=client
+			MouseMove($qx,$qy,3)
+			;switch back, for latter develop;
+			Opt("MouseCoordMode", 0) ;1=absolute, 0=relative, 2=client
+			Local $pos = MouseGetPos()
+			$qx=$pos[0]
+			$qy=$pos[1]
+			DEBUG("back to main Mouse x,y: "&$qx & "," & $qx)
+		 EndIf
+   EndIf
+	  
+	  
+	  If($qx<0)Then
+		 ; hard code it?
+	  DEBUG(" have to go hard coded ghome quest.  ")
+	  Sleep(1000)  
+	  $qx=402
+	  $qy=370
+   Else
+	  EndIf
+   
+   ;click q3 only when q3 is not active
+   
+   ; click q3-3
+   $qy=$qy+60;    402,430;
+   MouseMove($qx,$qy,3)
+   sleep(400)
+   MouseClick("left")
+   Sleep(400)
+   
+EndFunc
+
 
 
 Func A2Q72SSXXGO()
@@ -126,6 +335,17 @@ While 1
 	  ContinueLoop
    EndIf 
    
+   
+   If($needStash<1) Then
+	  
+	SellAndIDAndStash()
+	tryQuitGameToMenuFromInGame()
+	$needStash =20
+	ContinueLoop
+   EndIf
+   
+   $needStash = $needStash -1;
+   
       ; to the portal
    MoveToCellar()   
    Sleep(200) ; wait  for slow tp
@@ -133,7 +353,8 @@ While 1
    
    ;106 for all, 105 for legonly;
    MoveFast(506,376);
-   pickupNoMove(106);
+   ; beam legendary only: 5
+   pickupNoMove(106)
    tryQuitGameToMenuFromInGame()   
 WEnd
 EndFunc
@@ -221,18 +442,33 @@ WEnd
 EndFunc
 
 
-; 106 for all,
-;105for leg only;
-Func pickupNoMove($c)
-   
-   MoveFast(400,290)
-   FindItem($c,2)
-	     MoveFast(320,360)
-	     FindItem($c,2)   
-		    FindItem($c,2)   
-EndFunc
 
    
+Func pickupCommon($c)
+   
+   ; pickup where we are;
+   FindItem($c,2)
+   
+   FindItem($c,2)
+   
+   ; addtional pickup, move to potential position.
+   If($selectedContentType==3330) Then
+	  FindItem($c,3)
+	  FindItem($c,3)
+	  FindItem($c,3)
+	  MoveFast(296,364)
+	  FindItem($c,3)
+   Else
+	  ;106 for all, 105 for legonly;
+	  MoveFast(506,376);
+	  ; beam legendary only: 5
+	  FindItem($c,2)	  
+	  MoveFast(400,290)
+	  FindItem($c,2)
+   EndIf
+   
+EndFunc
+
    
 
 Func pickupAll()
@@ -263,9 +499,6 @@ Func pickupLegOnly()
    MoveFast(120,420)
    FindItem(105,2)
 EndFunc
-
-
-
 
 Func WDUPA1Q6ZL()
 
@@ -299,8 +532,6 @@ WEnd
 EndFunc
 
 
- 
- 
  
 Func D3AutoWZA1Q6zlMain()
 ; main loop
@@ -499,7 +730,7 @@ EndFunc
 ; input 0 as default, 1 as only resume.
 Func makeSureWeAreInGame($resumeOnly)
    DEBUG("run:  --makeSureWeAreInGame() , $playerStatus: "&$playerStatus)
-   Sleep(1000)
+   Sleep(200)
    
    $inMenu =0;
    ; resume are always ok.
@@ -537,7 +768,7 @@ Func makeSureWeAreInGame($resumeOnly)
    
    
    DEBUG("run:  status 11!!! we are confirmed to be in main menu!!! $playerStatus: "&$playerStatus)
-   Sleep(6000)
+   Sleep(1000)
    
    ; now we are in main menu and everything is clear. we try to click resume.   
    While Not ($playerStatus==0)
@@ -581,10 +812,14 @@ Func makeSureWeAreInMainMenu()
 $playerStatus = getPlayerStatus()
 ; supposted to be in main ,11,  as when this function si called , we supposted to just end another success running.
 DEBUG("run:  --makeSureWeAreInMainMenu() , $playerStatus(11 is ): "&$playerStatus)
-Sleep(3000)
+Sleep(600)
 
 $count =3;
 While Not ($playerStatus==11 Or $playerStatus==12)
+   $playerStatus = getPlayerStatus()
+		 DEBUG("run:  --makeSureWeAreInMainMenu() , $playerStatus(in while ): "&$playerStatus)
+		 Sleep(3000)
+		 
    ; can 12(play) work?   if it can i guess when can config this.
    ; here jsut suppose not.
    
@@ -599,22 +834,21 @@ While Not ($playerStatus==11 Or $playerStatus==12)
 		 Send("{ESCAPE}")
 		 Sleep(1000)
 	  EndIf
-	;  Sleep(100)
-	;  $playerStatus = getPlayerStatus()
+	  ;Sleep(100)
  EndIf
  
    If($playerStatus==9)Then
    ; we got esc pressed. we dont' know where it's from, we press esc agian to see.
 	  ;Send("{ESCAPE}")
 	; Sleep(1000)
-   EndIf
-      
+ EndIf
+ 
+   
    If($playerStatus>17)Then
 	  ; for case 18 or 19 or even 29, anyway , we are safe to press ESC and we will not exit game(not 11,12).
 	  Send("{ESCAPE}")
 	  Sleep(1000)
-	  
-	  ;$playerStatus = getPlayerStatus() ; got status again after short sleep
+	  $playerStatus = getPlayerStatus() ; got status again after short sleep
 	  ;ContinueLoop ; continue after we pressedagain.
    Else
 	  ; for case under 11,  it's already in game,
@@ -626,10 +860,9 @@ While Not ($playerStatus==11 Or $playerStatus==12)
    
    Sleep(100)
    $playerStatus = getPlayerStatus()
+   
 WEnd   
 EndFunc   ; =>makeSureWeAreInMainMenu()
-
-
 
 
 Func tryCheckFixGearFromBornPlace()
@@ -666,25 +899,9 @@ EndFunc
 
 
 Func InvRepairFromBorn()
+   fromBornToVendor()
    
-   If($act==1) Then
-	  InvRepairFromBornACT1()
-   ElseIf($act==2) Then
-	  InvRepairFromBornACT2();
-   EndIf
-   
-EndFunc
-
-
-Func InvRepairFromBornACT2()
-   
-MouseMove(358,98,3)
-Sleep(1000)
-   
-   MouseClick("left")
-   Sleep(4500)
-
-Click(295, 365)  ; click repair button.
+      Click(295, 365)  ; click repair button.
    Sleep(Random(800, 1600))
    
       Click(186, 326) ;button to pay for repairs
@@ -693,13 +910,123 @@ Click(295, 365)  ; click repair button.
    Send("{ESCAPE}")
    Sleep(Random(100, 200))
    
+   
+EndFunc
+
+Func fromVendorToStash()
+If($act==1) Then
+	  fromVendorToStash1()
+   ElseIf($act==2) Then
+	  fromVendorToStash2();
+   ElseIf($act==3) Then
+	  fromVendorToStash3();
+   EndIf
+EndFunc
+
+
+Func fromVendorToStash1()
+   DEBUG("--------------------------------------------NO fromVendorToStash1 FUNCTION");
+   Sleep(200000000)
+EndFunc
+
+
+Func fromVendorToStash2()
+   MoveExact(35,151,2000)
+   Sleep(3000)
+   mouseMove(250,371,3)
+   Sleep(500)
+   MouseClick("left")
+   Sleep(1500)
+
+EndFunc
+
+Func fromVendorToStash3()
+   MoveExact(794,386,2000)
+   Sleep(4000)
+   
+   mouseMove(752,250,3)
+   Sleep(500)
+   MouseClick("left")
+   Sleep(6500)
 EndFunc
 
 
 
-Func InvRepairFromBornACT1()
+; stash anything that can't be sold, so after this we will be fine.
+; idon't even care if bag is full or not, just go do this every like 20 round;;
+Func SellAndIDAndStash()
+   If($act==1) Then
+	  fromBornToVendorAct1()
+   ElseIf($act==2) Then
+	  fromBornToVendorAct2();
+   ElseIf($act==3) Then
+	  fromBornToVendorAct3();
+   EndIf
+   ; got repair done?. 
    
-   ;move to deeler.
+   MouseMove(293,368,3)
+   Sleep(500)
+   MouseClick("left");
+   
+   MouseMove(175,328,3)
+   Sleep(500)
+   MouseClick("left");
+   
+   MouseMove(293,154,3)
+   Sleep(500)
+   MouseClick("left");
+   
+   Sleep(200)
+   
+   ; sell everything,  these can't sell are leg, sorry to the plans;
+   rightClickEverySlotToSellOrToStash(2)
+   Send("{ESCAPE}")
+   Sleep(1000)
+   
+   ;from  vender to stash;
+   fromVendorToStash()
+   ;now use default stash page2:  shall be changed here.
+   MouseMove(292,219,3)
+   Sleep(500)
+   MouseClick("left");
+   Sleep(300)
+   
+   ;stash everything;
+   rightClickEverySlotToSellOrToStash(2)
+   Send("{ESCAPE}")
+   Sleep(200)
+EndFunc
+
+
+func fromBornToVendorAct3()
+   ; act3 fuking far
+   MouseMove(36,184,3)
+   Sleep(400)
+   MouseClick("left")
+   Sleep(4500)
+   
+   MouseMove(35,257,3)
+   Sleep(400)
+   MouseClick("left")
+   Sleep(4500)
+   
+   MouseMove(145,266,3)
+   Sleep(400)
+   MouseClick("left")
+   Sleep(4500)
+EndFunc
+
+
+Func fromBornToVendorAct2()
+   MouseMove(358,98,3)
+Sleep(1000)
+   
+   MouseClick("left")
+   Sleep(4500)
+EndFunc
+
+
+Func fromBornToVendorAct1()
    
    MoveExact(260,74,1000)
    Sleep(1000) ; ok to sleep longer we are selling stuff   
@@ -715,21 +1042,11 @@ Func InvRepairFromBornACT1()
 	  Sleep(500)
    EndIf
    
-   
-   
    MouseClick("left")
    Sleep(2500)
 
-   Click(293, 310)  ; click repair button.
-   Sleep(Random(800, 1600))
-   
-   Click(186, 326) ;button to pay for repairs
-   Sleep(Random(100, 600))
-   
-   Send("{ESCAPE}")
-   Sleep(Random(100, 200))
-EndFunc
 
+EndFunc
 
 
 Func tryQuitGameToMenuFromInGameTPFIRST()
@@ -799,7 +1116,7 @@ Func Pause() ; f10 function.
        While $Paused
                Sleep(500)
                ToolTip('Paused...', 0, 0)
-				;getLocationAndColor()
+				getLocationAndColor()
 			   ;test();
 			   
        WEnd
@@ -875,24 +1192,6 @@ Func MoveToCellarACT2()
 EndFunc
 
 ;202,103 for tp;
-
-
-
-
-
-
-Func MoveToFightingFrontLIneAndBuffed()
-   
-EndFunc
-
-
-
-; what we do in this function is that , the fight we do is not hard coded,
-; we are not supposed to move too much for a range class(easier for loot or for cruise an area)
-Func fightThisAreaAuto()
-   
-EndFunc
-
 
 
 
